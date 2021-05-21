@@ -13,7 +13,7 @@ const std::string kCpuinfoFilename{"/cpuinfo"};
 const std::string kStatusFilename{"/status"};
 const std::string kStatFilename{"/stat"};
 const std::string kUptimeFilename{"/uptime"};
-const std::string kMeminfoFilename{"/meminfo"};
+const std::string kMeminfoFilename{"meminfo"};
 const std::string kVersionFilename{"/version"};
 const std::string kOSPath{"/etc/os-release"};
 const std::string kPasswordPath{"/etc/passwd"};
@@ -40,6 +40,16 @@ enum CPUStates {
   kGuest_,
   kGuestNice_
 };
+  
+  //lines of meminfo needed to calculate memory use according to https://access.redhat.com/solutions/406773
+enum MemInfo {
+  MemTotal = 0,
+  MemFree,
+  MemBuffer,
+  MemCached,
+  MemSlab
+};
+
 std::vector<std::string> CpuUtilization();
 long Jiffies();
 long ActiveJiffies();

@@ -1,7 +1,12 @@
+#include <iostream>
 #include "ncurses_display.h"
 #include "system.h"
 
 int main() {
-  System system;
-  NCursesDisplay::Display(system);
+  try{
+  	System system;
+  	NCursesDisplay::Display(system);
+  }catch(std::exception& ex){	//because seg fault is a useless error for debugging
+    std::cerr << "Exception thrown: " << ex.what() << std::endl;
+  }
 }

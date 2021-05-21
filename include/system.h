@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <experimental/optional>
 
 #include "process.h"
 #include "processor.h"
@@ -20,7 +21,7 @@ class System {
 
   // TODO: Define any necessary private members
  private:
-  Processor cpu_ = {};
+  std::experimental::optional<Processor> cpu_;
   std::vector<Process> processes_ = {};
 };
 
