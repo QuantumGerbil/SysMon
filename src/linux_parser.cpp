@@ -5,6 +5,8 @@
 #include <vector>
 #include <iostream>
 #include <experimental/optional>
+#include <limits>
+#include <numeric>
 
 #include "linux_parser.h"
 
@@ -34,7 +36,7 @@ string LinuxParser::OperatingSystem() {
       }
     }
   } else{
-    throw std::runtime_error("File doesn't exist or can't open");
+    throw std::runtime_error("string LinuxParser::OperatingSystem():File doesn't exist or can't open");
   }
   return value;
 }
@@ -49,7 +51,7 @@ string LinuxParser::Kernel() {
     std::istringstream linestream(line);
     linestream >> os >> version >> kernel;
   } else{
-    throw std::runtime_error("File doesn't exist or can't open");
+    throw std::runtime_error("string LinuxParser::Kernel():File doesn't exist or can't open");
   }
   return kernel;
 }
@@ -94,7 +96,7 @@ float LinuxParser::MemoryUtilization() {
     retVal = (memInfoProc[MemInfo::MemTotal] - memInfoProc[MemInfo::MemFree] - memInfoProc[MemInfo::MemBuffer] -
               memInfoProc[MemInfo::MemCached] - memInfoProc[MemInfo::MemSlab]) / memInfoProc[MemInfo::MemTotal];
   } else{
-    throw std::runtime_error("File doesn't exist or can't open");
+    throw std::runtime_error("float LinuxParser::MemoryUtilization():File doesn't exist or can't open");
   }  
   return retVal.value_or(-1);
 }
@@ -111,7 +113,7 @@ long LinuxParser::UpTime() {
     ss >> value;
     retVal.emplace(value);
   } else{
-    throw std::runtime_error("File doesn't exist or can't open");
+    throw std::runtime_error("long LinuxParser::UpTime():File doesn't exist or can't open");
   }
   return retVal.value_or(-1);
 }
@@ -165,7 +167,7 @@ long LinuxParser::ActiveJiffies(int pid) {
       	retVal += time;
     }
   } else{
-    throw std::runtime_error("File doesn't exist or can't open");
+    throw std::runtime_error("long LinuxParser::ActiveJiffies(int pid):File doesn't exist or can't open");
   }
   return retVal;
 }
@@ -190,7 +192,7 @@ long LinuxParser::ActiveJiffies() {
                + statCPUProc[CPUStates::kSoftIRQ_] + statCPUProc[CPUStates::kIRQ_] + statCPUProc[CPUStates::kSteal_]
                + statCPUProc[CPUStates::kGuest_] + statCPUProc[CPUStates::kGuestNice_];
   } else{
-    throw std::runtime_error("File doesn't exist or can't open");
+    throw std::runtime_error("long LinuxParser::ActiveJiffies():File doesn't exist or can't open");
   }
   //std::cerr << "long LinuxParser::ActiveJiffies(): " << *retVal << std::endl;
   return retVal.value_or(-1);
@@ -214,7 +216,7 @@ long LinuxParser::IdleJiffies() {
     }
     retVal = statCPUProc[CPUStates::kIdle_] + statCPUProc[CPUStates::kIOwait_];
   } else{
-    throw std::runtime_error("File doesn't exist or can't open");
+    throw std::runtime_error("long LinuxParser::IdleJiffies():File doesn't exist or can't open");
   }
   //std::cerr << "long LinuxParser::IdleJiffies(): " << *retVal << std::endl;
   return retVal.value_or(-1);
@@ -243,7 +245,7 @@ vector<string> LinuxParser::CpuUtilization() {
         std::getline(fileStream, buffer);
     }  
   } else{
-    throw std::runtime_error("File doesn't exist or can't open");
+    throw std::runtime_error("vector<string> LinuxParser::CpuUtilization():File doesn't exist or can't open");
   }
   return retVal.value_or(vector<string>());
 }
@@ -264,7 +266,7 @@ int LinuxParser::TotalProcesses() {
       }
     }
   } else{
-    throw std::runtime_error("File doesn't exist or can't open");
+    throw std::runtime_error("int LinuxParser::TotalProcesses():File doesn't exist or can't open");
   }
   return retVal.value_or(-1);
 }
@@ -285,7 +287,7 @@ int LinuxParser::RunningProcesses() {
       }
     }
   } else{
-    throw std::runtime_error("File doesn't exist or can't open");
+    throw std::runtime_error("int LinuxParser::RunningProcesses():File doesn't exist or can't open");
   }
   return retVal.value_or(-1);
 }
@@ -299,7 +301,7 @@ string LinuxParser::Command(int pid) {
     std::getline(fileStream, buffer);
     retVal = buffer;
   } else{
-    throw std::runtime_error("File doesn't exist or can't open");
+    throw std::runtime_error("string LinuxParser::Command(int pid):File doesn't exist or can't open");
   }
   return retVal.value_or("N/A");
 }
@@ -320,15 +322,16 @@ string LinuxParser::Ram(int pid) {
       }
     }
   } else{
-    throw std::runtime_error("File doesn't exist or can't open");
+    throw std::runtime_error("string LinuxParser::Ram(int pid):File doesn't exist or can't open");
   }
   return retVal.value_or("N/A");
 }
 
 // DONE: Read and return the user ID associated with a process
+// TODO: Keeps throwing exception
 string LinuxParser::Uid(int pid) {
   optional<string> retVal;
-  string buffer, key;
+  /*string buffer, key;
   long value;
   std::ifstream fileStream(kProcDirectory + std::to_string(pid) + "/status");
   if (fileStream.is_open()) {
@@ -341,8 +344,8 @@ string LinuxParser::Uid(int pid) {
       }
     }
   } else{
-    throw std::runtime_error("File doesn't exist or can't open");
-  }
+    throw std::runtime_error("string LinuxParser::Uid(int pid):File doesn't exist or can't open");
+  }*/
   return retVal.value_or("N/A");
 }
 
@@ -364,7 +367,7 @@ string LinuxParser::User(int pid) {
       }
     }
   } else{
-    throw std::runtime_error("File doesn't exist or can't open");
+    throw std::runtime_error("string LinuxParser::User(int pid):File doesn't exist or can't open");
   }
   return retVal.value_or("N/A");
 }
@@ -387,7 +390,7 @@ long LinuxParser::UpTime(int pid) {
     }
     retVal = (uptime - value) / Hz;
   } else{
-    throw std::runtime_error("File doesn't exist or can't open");
+    throw std::runtime_error("long LinuxParser::UpTime(int pid):File doesn't exist or can't open");
   }
   return retVal.value_or(-1);  
 }
