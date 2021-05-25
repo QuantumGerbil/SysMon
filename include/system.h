@@ -22,7 +22,14 @@ class System {
   // TODO: Define any necessary private members
  private:
   std::experimental::optional<Processor> cpu_;
-  std::vector<Process> processes_ = {};
+  std::vector<Process> processes_;
+  std::experimental::optional<std::string> kernel_;
+  std::experimental::optional<std::pair<long,float> > memUtilization_;
+  long int upTime_{0};
+  std::experimental::optional<std::string> os_;
+  std::experimental::optional<std::pair<long, long> > runningProcCount_;
+  std::experimental::optional<std::pair<long, long> > totalProcCount_;
+  
 };
 
 #endif

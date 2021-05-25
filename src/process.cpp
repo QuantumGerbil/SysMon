@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include "process.h"
 
@@ -19,12 +20,14 @@ void Process::Pid(int const p){
 
 // DONE: Return this process's CPU utilization
 float Process::CpuUtilization() {
-  return (cpu_ - previousCpu_) * 100.0;
+  return cpu_;
 }
 
 void Process::CpuUtilization(long const activeJiffies, long const totalJiffies){
-  previousCpu_ = cpu_;
-  cpu_ = activeJiffies / totalJiffies;
+  previousJiffies_ = activeJiffies;
+  prevTotalJiffies_ = totalJiffies;
+  float util = (activeJiffies - previousJiffies_) / (totalJiffies - prevTotalJiffies_);
+  cpu_ = util;
 }
 
 // DONE: Return the command that generated this process

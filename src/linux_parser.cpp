@@ -152,7 +152,8 @@ long LinuxParser::ActiveJiffies(int pid) {
   long retVal = 0;
   string buffer;
   vector<long> statCPUProc;
-  std::ifstream fileStream(kProcDirectory + std::to_string(pid) + "/stat");
+  std::string path = kProcDirectory + std::to_string(pid) + "/stat";
+  std::ifstream fileStream(path);
   if (fileStream.is_open()) {
     string ignore;
     std::getline(fileStream, buffer);
@@ -167,7 +168,7 @@ long LinuxParser::ActiveJiffies(int pid) {
       	retVal += time;
     }
   } else{
-    throw std::runtime_error("long LinuxParser::ActiveJiffies(int pid):File doesn't exist or can't open");
+    throw std::runtime_error("long LinuxParser::ActiveJiffies(int pid):" + path + " doesn't exist or can't open");
   }
   return retVal;
 }
@@ -331,7 +332,7 @@ string LinuxParser::Ram(int pid) {
 // TODO: Keeps throwing exception
 string LinuxParser::Uid(int pid) {
   optional<string> retVal;
-  /*string buffer, key;
+  string buffer, key;
   long value;
   std::ifstream fileStream(kProcDirectory + std::to_string(pid) + "/status");
   if (fileStream.is_open()) {
@@ -345,8 +346,8 @@ string LinuxParser::Uid(int pid) {
     }
   } else{
     throw std::runtime_error("string LinuxParser::Uid(int pid):File doesn't exist or can't open");
-  }*/
-  return retVal.value_or("N/A");
+  }
+  return retVal.value();
 }
 
 // DONE: Read and return the user associated with a process
@@ -358,7 +359,9 @@ string LinuxParser::User(int pid) {
 
   std::ifstream fileStream(kPasswordPath);
   if (fileStream.is_open()) {
-    while (std::getline(fileStream, buffer, ':')) {
+    while (std::getline(fileStream, buffer)) {
+      std::replace( buffer.begin(), buffer.end(), ':', ' ');
+      std::replace( buffer.begin(), buffer.end(), ',', ' ');
       std::istringstream ss(buffer);
       while (ss >> value >> key >> key) {
         if (key == uid) {

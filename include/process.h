@@ -28,8 +28,9 @@ class Process {
   std::string user_;
   std::string cmd_;
   long upTime_;
-  float cpu_;
-  float previousCpu_;
+  float cpu_{0};
+  float previousJiffies_{0};
+  float prevTotalJiffies_{0};
   std::string ram_;
 };
 
