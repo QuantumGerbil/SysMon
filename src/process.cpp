@@ -24,9 +24,9 @@ float Process::CpuUtilization() {
 }
 
 void Process::CpuUtilization(long const activeJiffies, long const totalJiffies){
+  float util = (activeJiffies - previousJiffies_) / (totalJiffies - prevTotalJiffies_);
   previousJiffies_ = activeJiffies;
   prevTotalJiffies_ = totalJiffies;
-  float util = (activeJiffies - previousJiffies_) / (totalJiffies - prevTotalJiffies_);
   cpu_ = util;
 }
 

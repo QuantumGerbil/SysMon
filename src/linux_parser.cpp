@@ -7,6 +7,7 @@
 #include <experimental/optional>
 #include <limits>
 #include <numeric>
+#include <experimental/filesystem>
 
 #include "linux_parser.h"
 
@@ -59,7 +60,18 @@ string LinuxParser::Kernel() {
 // BONUS: Update this to use std::filesystem
 vector<int> LinuxParser::Pids() {
   vector<int> pids;
-  DIR* directory = opendir(kProcDirectory.c_str());
+  string path = kProcDirectory;
+  for (const auto &file : std::experimental::filesystem::directory_iterator(path)){
+    if(std::experimental::filesystem::is_directory(file)){
+      string filename(file.path().filename());
+      if (std::all_of(filename.begin(), filename.end(), isdigit)) {
+        int pid = stoi(filename);
+        pids.push_back(pid);
+      }
+    }
+  }
+          
+  /*DIR* directory = opendir(kProcDirectory.c_str());
   struct dirent* file;
   while ((file = readdir(directory)) != nullptr) {
     // Is this a directory?
@@ -72,7 +84,8 @@ vector<int> LinuxParser::Pids() {
       }
     }
   }
-  closedir(directory);
+  closedir(directory);*/
+  
   return pids;
 }
 
@@ -297,7 +310,8 @@ int LinuxParser::RunningProcesses() {
 string LinuxParser::Command(int pid) {
   optional<string> retVal;
   string buffer;
-  std::ifstream fileStream(kProcDirectory + std::to_string(pid) + "/cmdline");
+  string path = kProcDirectory + std::to_string(pid) + "/cmdline";
+  std::ifstream fileStream(path);
   if (fileStream.is_open()) {
     std::getline(fileStream, buffer);
     retVal = buffer;
@@ -312,7 +326,8 @@ string LinuxParser::Ram(int pid) {
   optional<string> retVal;
   string buffer, key;
   long value;
-  std::ifstream fileStream(kProcDirectory + std::to_string(pid) + "/status");
+  string path = kProcDirectory + std::to_string(pid) + "/status";
+  std::ifstream fileStream(path);
   if (fileStream.is_open()) {
     while (std::getline(fileStream, buffer)) {
       std::istringstream ss(buffer);
@@ -334,7 +349,8 @@ string LinuxParser::Uid(int pid) {
   optional<string> retVal;
   string buffer, key;
   long value;
-  std::ifstream fileStream(kProcDirectory + std::to_string(pid) + "/status");
+  string path = kProcDirectory + std::to_string(pid) + "/status";
+  std::ifstream fileStream(path);
   if (fileStream.is_open()) {
     while (std::getline(fileStream, buffer)) {
       std::istringstream ss(buffer);
@@ -380,18 +396,18 @@ long LinuxParser::UpTime(int pid) {
   optional<long> retVal;
   int Hz = sysconf(_SC_CLK_TCK);
   long uptime = LinuxParser::UpTime();
+  long processStartTime;
   
   string buffer, key;
-  
-  std::ifstream fileStream(kProcDirectory + std::to_string(pid) + "/status");
+  string path = kProcDirectory + std::to_string(pid) + "/stat";
+  std::ifstream fileStream(path);
   if (fileStream.is_open()) {
-    long value;
     std::getline(fileStream, buffer);
     std::istringstream ss(buffer);
     for(int i = 0; i < 22; i++){
-      ss >> value;
+      ss >> processStartTime;
     }
-    retVal = (uptime - value) / Hz;
+    retVal = uptime - processStartTime /Hz;
   } else{
     throw std::runtime_error("long LinuxParser::UpTime(int pid):File doesn't exist or can't open");
   }

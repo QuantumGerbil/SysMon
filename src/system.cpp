@@ -3,10 +3,9 @@
 #include <set>
 #include <string>
 #include <vector>
-#include <thread>
-#include <utility>
 #include "linux_parser.h"
-#include <iostream>
+#include <bits/stdc++.h>
+
 
 #include "process.h"
 #include "processor.h"
@@ -33,6 +32,8 @@ Processor& System::Cpu() {
 }
 
 // DONE: Return a container composed of the system's processes
+// In an attempt to avoid file errors due to too many calls to open I'm restricting the full rebuild of the process vector
+// to once on the first call to the function, and if the number of total processes changes. Otherwise updates of the processes is time synced
 vector<Process>& System::Processes() {
   static long runTime = upTime_;
   if(processes_.empty()){  
@@ -52,14 +53,29 @@ vector<Process>& System::Processes() {
     if(runTime < upTime_){
       runTime = upTime_;
       int jif = LinuxParser::Jiffies();
-      for(auto process : processes_){
-        int pid = process.Pid();
-        process.UpTime(LinuxParser::UpTime(pid));
-        process.Ram(LinuxParser::Ram(pid));
-        process.CpuUtilization(LinuxParser::ActiveJiffies(pid), jif);
+      vector<int> pid = LinuxParser::Pids();
+      if(pid.size() != processes_.size()){
+  	    for(const auto iP : pid){
+    	  Process proc;
+    	  proc.Pid(iP);
+    	  proc.User(LinuxParser::User(iP));
+    	  proc.Command(LinuxParser::Command(iP));
+    	  proc.UpTime(LinuxParser::UpTime(iP));
+    	  proc.Ram(LinuxParser::Ram(iP));
+    	  proc.CpuUtilization(LinuxParser::ActiveJiffies(iP), jif);
+    	  processes_.emplace_back(proc);
+  	    }
+      }else{      
+        for(auto process : processes_){
+          int pid = process.Pid();
+          process.UpTime(LinuxParser::UpTime(pid));
+          process.Ram(LinuxParser::Ram(pid));
+          process.CpuUtilization(LinuxParser::ActiveJiffies(pid), jif);
+        }
       }
     }
   }
+  std::sort(processes_.begin(), processes_.end());
   return processes_;
 }
 
